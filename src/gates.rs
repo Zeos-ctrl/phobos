@@ -1,0 +1,90 @@
+use crate::state::QuantumState;
+
+// Apply Hadamard gate to a specific qubit
+pub fn apply_hadamard(state: &mut QuantumState, target_qubit: usize) {
+    let num_amplitudes = state.amplitudes.len();
+    
+    for i in 0..num_amplitudes {
+        // Check if bit at position target_qubit in i is 0 using a bitwise mask
+        if (i & (1 << target_qubit)) == 0 {
+            let j = i + (1 << target_qubit);  // Same as i + 2^target_qubit
+
+            let old_i = state.amplitudes[i];
+            let old_j = state.amplitudes[j];
+
+            let factor = 1.0 / f64::sqrt(2.0);
+
+            // Compute new values
+            let new_i = old_i.add(&old_j).scale(factor);
+            let new_j = old_i.subtract(&old_j).scale(factor);
+
+            // Update the state
+            state.amplitudes[i] = new_i;
+            state.amplitudes[j] = new_j;
+            
+        }
+    } 
+}
+
+// Apply CNOT gate (flips target if control is |1⟩)
+pub fn apply_cnot(state: &mut QuantumState, control_qubit: usize, target_qubit: usize) {
+    let num_amplitudes = state.amplitudes.len();
+
+    for i in 0..num_amplitudes {
+        // First check: is the control bit set to 1?
+        if (i & (1 << control_qubit)) != 0 {
+            // only process when target bit is 0
+            if (i & (1 << target_qubit)) == 0 {
+                // Calculate the swap partner
+                let j = i ^ (1 << target_qubit);  // XOR flips the target bit
+                
+                // Swap amplitudes[i] and amplitudes[j]
+                let temp = state.amplitudes[i];
+                state.amplitudes[i] = state.amplitudes[j];
+                state.amplitudes[j] = temp;
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::state::QuantumState;
+
+    #[test]
+    fn test_hadamard_on_zero_state() {
+        let mut state = QuantumState::new(1);
+        apply_hadamard(&mut state, 0);
+        
+        // After H|0⟩, should get (1/√2)|0⟩ + (1/√2)|1⟩
+        let expected = 1.0 / f64::sqrt(2.0);
+        assert!((state.amplitudes[0].real - expected).abs() < 1e-10);
+        assert!((state.amplitudes[1].real - expected).abs() < 1e-10);
+        assert!(state.amplitudes[0].imag.abs() < 1e-10);
+        assert!(state.amplitudes[1].imag.abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_cnot_creates_bell_state() {
+        let mut state = QuantumState::new(2);
+        
+        // Apply H to qubit 0: |00⟩ → (1/√2)(|00⟩ + |10⟩)
+        apply_hadamard(&mut state, 0);
+        
+        // Apply CNOT: (1/√2)(|00⟩ + |10⟩) → (1/√2)(|00⟩ + |11⟩)
+        apply_cnot(&mut state, 0, 1);
+        
+        let expected = 1.0 / f64::sqrt(2.0);
+        
+        // Should have amplitude 1/√2 for |00⟩ (index 0)
+        assert!((state.amplitudes[0].real - expected).abs() < 1e-10);
+        
+        // Should have amplitude 0 for |01⟩ (index 1) and |10⟩ (index 2)
+        assert!(state.amplitudes[1].magnitude_squared() < 1e-10);
+        assert!(state.amplitudes[2].magnitude_squared() < 1e-10);
+        
+        // Should have amplitude 1/√2 for |11⟩ (index 3)
+        assert!((state.amplitudes[3].real - expected).abs() < 1e-10);
+    }
+}
