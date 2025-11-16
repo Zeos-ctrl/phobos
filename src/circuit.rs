@@ -4,6 +4,10 @@ use std::fmt;
 pub enum Gate {
     Hadamard { target: usize },
     CNOT { control: usize, target: usize },
+    X { target: usize },
+    Y { target: usize },
+    Z { target: usize },
+    I { target: usize },
 }
 
 pub struct Circuit {
@@ -55,12 +59,12 @@ impl fmt::Display for Circuit {
                             }
                         }
                     }
-                }
+                },
                 Gate::CNOT { control, target } => {
                     for i in 0..self.num_qubits {
                         match i {
                             i if i == *target => {
-                                lines[i].push('X');
+                                lines[i].push('C');
                                 lines[i].push('─')
                             },
                             i if i == *control => {
@@ -73,7 +77,63 @@ impl fmt::Display for Circuit {
                             }
                         }
                     }
-                }
+                },
+                Gate::X { target } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *target => {
+                                lines[i].push('X');
+                                lines[i].push('─');
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
+                Gate::Y { target } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *target => {
+                                lines[i].push('Y');
+                                lines[i].push('─');
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
+                Gate::Z { target } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *target => {
+                                lines[i].push('Z');
+                                lines[i].push('─');
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
+                Gate::I { target } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *target => {
+                                lines[i].push('I');
+                                lines[i].push('─');
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
             }
         }
         
@@ -97,11 +157,14 @@ mod tests {
 
     #[test]
     fn test_adding_gates() {
-        let mut circuit = Circuit::new(2);
+        let mut circuit = Circuit::new(5);
         circuit.add_gate(Gate::Hadamard { target: 0 });
         circuit.add_gate(Gate::CNOT { control: 0, target: 1 });
+        circuit.add_gate(Gate::X { target: 0 });
+        circuit.add_gate(Gate::Y { target: 0 });
+        circuit.add_gate(Gate::Z { target: 0 });
         
-        assert_eq!(circuit.gates().len(), 2);
+        assert_eq!(circuit.gates().len(), 5);
         
         // Check first gate
         match circuit.gates()[0] {
@@ -116,6 +179,24 @@ mod tests {
                 assert_eq!(target, 1);
             }
             _ => panic!("Expected CNOT gate"),
+        }
+
+        // Check third gate
+        match circuit.gates()[2] {
+            Gate::X { target } => assert_eq!(target, 0),
+            _ => panic!("Expected X gate"),
+        }
+
+        // Check fourth gate
+        match circuit.gates()[3] {
+            Gate::Y { target } => assert_eq!(target, 0),
+            _ => panic!("Expected Y gate"),
+        }
+
+        // Check fifth gate
+        match circuit.gates()[4] {
+            Gate::Z { target } => assert_eq!(target, 0),
+            _ => panic!("Expected Z gate"),
         }
     }
 }

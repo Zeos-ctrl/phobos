@@ -74,9 +74,21 @@ impl Simulator {
             match gate {
                 Gate::Hadamard { target } => {
                     gates::apply_hadamard(&mut state, *target);
-                }
+                },
                 Gate::CNOT { control, target } => {
                     gates::apply_cnot(&mut state, *control, *target);
+                },
+                Gate::X { target } => {
+                    gates::apply_x(&mut state, *target);
+                },
+                Gate::Y { target } => {
+                    gates::apply_y(&mut state, *target);
+                },
+                Gate::Z { target } => {
+                    gates::apply_z(&mut state, *target);
+                },
+                Gate::I { target } => {
+                    gates::apply_identity(&mut state, *target);
                 }
             }
         }
@@ -102,14 +114,42 @@ impl Simulator {
                         description: format!("Applied Hadamard to qubit {}", *target),
                         state: state.clone()
                     });
-                }
+                },
                 Gate::CNOT { control, target } => {
                     gates::apply_cnot(&mut state, *control, *target);
                     trace.steps.push(TraceStep {
                         description: format!("Applied CNOT (control: {}, target: {})", *control, *target),
                         state: state.clone()
                     });
-                }
+                },
+                Gate::X { target } => {
+                    gates::apply_x(&mut state, *target);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied X gate to qubit {}", *target),
+                        state: state.clone()
+                    });
+                },
+                Gate::Y { target } => {
+                    gates::apply_y(&mut state, *target);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied Y gate to qubit {}", *target),
+                        state: state.clone()
+                    });
+                },
+                Gate::Z { target } => {
+                    gates::apply_z(&mut state, *target);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied Z gate to qubit {}", *target),
+                        state: state.clone()
+                    });
+                },
+                Gate::I { target } => {
+                    gates::apply_identity(&mut state, *target);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied I gate to qubit {}", *target),
+                        state: state.clone()
+                    });
+                },
             }
         }
         let result = state.measure();

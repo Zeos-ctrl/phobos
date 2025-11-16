@@ -1,4 +1,5 @@
 use crate::state::QuantumState;
+use crate::Complex;
 
 // Apply Hadamard gate to a specific qubit
 pub fn apply_hadamard(state: &mut QuantumState, target_qubit: usize) {
@@ -47,6 +48,89 @@ pub fn apply_cnot(state: &mut QuantumState, control_qubit: usize, target_qubit: 
     }
 }
 
+// Apply Z gate (flips qubit in the Z axis)
+pub fn apply_z(state: &mut QuantumState, target_qubit: usize) {
+    let num_amplitudes = state.amplitudes.len();
+    
+    for i in 0..num_amplitudes {
+        // Check if bit at position target_qubit in i is 0 using a bitwise mask
+        if (i & (1 << target_qubit)) == 0 {
+            let j = i + (1 << target_qubit);  // Same as i + 2^target_qubit
+
+            let old_j = state.amplitudes[j];
+            let new_j = old_j.scale(-1.0);
+
+            // Update the state
+            state.amplitudes[j] = new_j;
+        }
+    }
+}
+
+// Apply the X gate (Swap Alpha and Beta)
+pub fn apply_x(state: &mut QuantumState, target_qubit: usize) {
+    let num_amplitudes = state.amplitudes.len();
+    
+    for i in 0..num_amplitudes {
+        // Check if bit at position target_qubit in i is 0 using a bitwise mask
+        if (i & (1 << target_qubit)) == 0 {
+            let j = i + (1 << target_qubit);  // Same as i + 2^target_qubit
+
+            let old_i = state.amplitudes[i]; // Alpha
+            let old_j = state.amplitudes[j]; // Beta
+
+            // Swap alpha and beta
+            let new_i = old_j;
+            let new_j = old_i;
+
+            // Update the state
+            state.amplitudes[i] = new_i;
+            state.amplitudes[j] = new_j;
+        }
+    }
+}
+
+// Apply the Y gate (bit flip with phase)
+// Transforms |0⟩ → i|1⟩ and |1⟩ → -i|0⟩
+pub fn apply_y(state: &mut QuantumState, target_qubit: usize) {
+    let num_amplitudes = state.amplitudes.len();
+    let imag = Complex::new(0.0, 1.0);
+    
+    for i in 0..num_amplitudes {
+        // Check if bit at position target_qubit in i is 0 using a bitwise mask
+        if (i & (1 << target_qubit)) == 0 {
+            let j = i + (1 << target_qubit);  // Same as i + 2^target_qubit
+
+            let old_i = state.amplitudes[i]; // Alpha
+            let old_j = state.amplitudes[j]; // Beta
+
+            // Swap alpha and beta
+            let new_i = old_j.multiply(&imag.conjugate());
+            let new_j = old_i.multiply(&imag);
+
+            // Update the state
+            state.amplitudes[i] = new_i;
+            state.amplitudes[j] = new_j;
+        }
+    }
+}
+
+// Apply the I gate (Identity matrix)... Literally do nothing
+pub fn apply_identity(state: &mut QuantumState, target_qubit: usize) {
+    let num_amplitudes = state.amplitudes.len();
+
+    for i in 0..num_amplitudes {
+        if (i & (1 << target_qubit)) == 0 {
+            let j = i + (1 << target_qubit);
+
+            let identity_i = state.amplitudes[i];
+            let identity_j = state.amplitudes[j];
+
+            state.amplitudes[i] = identity_i;
+            state.amplitudes[j] = identity_j;
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -86,5 +170,63 @@ mod tests {
         
         // Should have amplitude 1/√2 for |11⟩ (index 3)
         assert!((state.amplitudes[3].real - expected).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_z_gate() {
+        use crate::state::QuantumState;
+        use crate::complex::Complex;
+        
+        // Create a state in superposition: (1/√2)|0⟩ + (1/√2)|1⟩
+        let mut state = QuantumState::new(1);
+        state.amplitudes[0] = Complex::new(1.0 / f64::sqrt(2.0), 0.0);
+        state.amplitudes[1] = Complex::new(1.0 / f64::sqrt(2.0), 0.0);
+        
+        // Apply Z gate
+        apply_z(&mut state, 0);
+        
+        // After Z: (1/√2)|0⟩ - (1/√2)|1⟩
+        // First amplitude should stay positive
+        assert!((state.amplitudes[0].real - 1.0 / f64::sqrt(2.0)).abs() < 1e-10);
+        
+        // Second amplitude should become negative
+        assert!((state.amplitudes[1].real + 1.0 / f64::sqrt(2.0)).abs() < 1e-10);
+        
+        // Both imaginary parts should be ~0
+        assert!(state.amplitudes[0].imag.abs() < 1e-10);
+        assert!(state.amplitudes[1].imag.abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_x_gate() {
+        use crate::state::QuantumState;
+        use crate::complex::Complex;
+        
+        // Test X flips |0⟩ to |1⟩
+        let mut state = QuantumState::new(1);
+        apply_x(&mut state, 0);
+        
+        // Should now be |1⟩
+        assert!(state.amplitudes[0].magnitude_squared() < 1e-10); // |0⟩ amplitude is 0
+        assert!((state.amplitudes[1].real - 1.0).abs() < 1e-10);  // |1⟩ amplitude is 1
+        
+        // Test X flips |1⟩ back to |0⟩
+        apply_x(&mut state, 0);
+        assert!((state.amplitudes[0].real - 1.0).abs() < 1e-10);  // Back to |0⟩
+        assert!(state.amplitudes[1].magnitude_squared() < 1e-10);
+    }
+
+    #[test]
+    fn test_y_gate() {
+        use crate::state::QuantumState;
+        
+        // Test Y on |0⟩ gives i|1⟩
+        let mut state = QuantumState::new(1);
+        apply_y(&mut state, 0);
+        
+        // Should be i|1⟩, so amplitude[1] = 0 + 1i
+        assert!(state.amplitudes[0].magnitude_squared() < 1e-10);
+        assert!(state.amplitudes[1].real.abs() < 1e-10);
+        assert!((state.amplitudes[1].imag - 1.0).abs() < 1e-10);
     }
 }
