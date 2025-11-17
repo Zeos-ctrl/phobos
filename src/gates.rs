@@ -1,6 +1,8 @@
 use crate::state::QuantumState;
 use crate::Complex;
 
+use rand::Rng;
+
 /// Applies a Hadamard gate to the specified qubit.
 ///
 /// The Hadamard gate creates superposition, transforming:
@@ -85,7 +87,60 @@ pub fn apply_cnot(state: &mut QuantumState, control_qubit: usize, target_qubit: 
     }
 }
 
-// Apply Z gate (flips qubit in the Z axis)
+/// Applies a Controlled-Z gate to the specified qubits.
+///
+/// The Controlled-Z gate applies a phase flip to the target qubit if and 
+/// only if the control qubit is in state |1⟩. This results in adding a 
+/// negative phase only to the |11⟩ basis state:
+///
+/// - |00⟩ → |00⟩
+/// - |01⟩ → |01⟩
+/// - |10⟩ → |10⟩
+/// - |11⟩ → -|11⟩
+///
+/// # Arguments
+/// * `state` - The quantum state to modify
+/// * `control_qubit` - Index of the control qubit (0-indexed)
+/// * `target_qubit` - Index of the target qubit (0-indexed)
+///
+/// # Examples
+/// ```
+/// use phobos::{QuantumState, gates};
+/// let mut state = QuantumState::new(2);
+/// gates::apply_cz(&mut state, 0, 1);
+/// ```
+pub fn apply_cz(state: &mut QuantumState, control_qubit: usize, target_qubit: usize) {
+    let num_amplitudes = state.amplitudes.len();
+    
+    for i in 0..num_amplitudes {
+        // Check if BOTH control and target bits are 1
+        let control_mask = 1 << control_qubit;
+        let target_mask = 1 << target_qubit;
+        
+        if (i & control_mask) != 0 && (i & target_mask) != 0 {
+            // Both qubits are |1⟩, so add negative phase
+            state.amplitudes[i] = state.amplitudes[i].scale(-1.0);
+        }
+    }
+}
+
+/// Applies a Pauli-Z gate to the specified qubit.
+///
+/// The Z gate applies a phase flip, leaving |0⟩ unchanged but adding
+/// a negative phase to |1⟩:
+/// - |0⟩ → |0⟩
+/// - |1⟩ → -|1⟩
+///
+/// # Arguments
+/// * `state` - The quantum state to modify
+/// * `target_qubit` - Index of the qubit to apply the gate to (0-indexed)
+///
+/// # Examples
+/// ```
+/// use phobos::{QuantumState, gates};
+/// let mut state = QuantumState::new(1);
+/// gates::apply_z(&mut state, 0);
+/// ```
 pub fn apply_z(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
     
@@ -103,7 +158,22 @@ pub fn apply_z(state: &mut QuantumState, target_qubit: usize) {
     }
 }
 
-// Apply the X gate (Swap Alpha and Beta)
+/// Applies a Pauli-X gate to the specified qubit.
+///
+/// The X gate is the quantum NOT gate, flipping the qubit state:
+/// - |0⟩ → |1⟩
+/// - |1⟩ → |0⟩
+///
+/// # Arguments
+/// * `state` - The quantum state to modify
+/// * `target_qubit` - Index of the qubit to apply the gate to (0-indexed)
+///
+/// # Examples
+/// ```
+/// use phobos::{QuantumState, gates};
+/// let mut state = QuantumState::new(1);
+/// gates::apply_x(&mut state, 0);
+/// ```
 pub fn apply_x(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
     
@@ -126,8 +196,22 @@ pub fn apply_x(state: &mut QuantumState, target_qubit: usize) {
     }
 }
 
-// Apply the Y gate (bit flip with phase)
-// Transforms |0⟩ → i|1⟩ and |1⟩ → -i|0⟩
+/// Applies a Pauli-Y gate to the specified qubit.
+///
+/// The Y gate combines a bit flip with a phase change:
+/// - |0⟩ → i|1⟩
+/// - |1⟩ → -i|0⟩
+///
+/// # Arguments
+/// * `state` - The quantum state to modify
+/// * `target_qubit` - Index of the qubit to apply the gate to (0-indexed)
+///
+/// # Examples
+/// ```
+/// use phobos::{QuantumState, gates};
+/// let mut state = QuantumState::new(1);
+/// gates::apply_y(&mut state, 0);
+/// ```
 pub fn apply_y(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
     let imag = Complex::new(0.0, 1.0);
@@ -151,7 +235,14 @@ pub fn apply_y(state: &mut QuantumState, target_qubit: usize) {
     }
 }
 
-// Apply the I gate (Identity matrix)... Literally do nothing
+/// Applies an Identity gate to the specified qubit.
+///
+/// The Identity gate performs no operation, leaving the state unchanged.
+/// This is primarily used as a placeholder in quantum circuits.
+///
+/// # Arguments
+/// * `state` - The quantum state (unchanged)
+/// * `target_qubit` - Index of the qubit (unused)
 pub fn apply_identity(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
 
@@ -166,6 +257,57 @@ pub fn apply_identity(state: &mut QuantumState, target_qubit: usize) {
             state.amplitudes[j] = identity_j;
         }
     }
+}
+
+/// Measures a specific qubit and collapses the quantum state.
+///
+/// Unlike [`QuantumState::measure`] which measures all qubits, this function
+/// measures only the specified qubit, leaving other qubits in superposition.
+/// The state is collapsed based on the measurement outcome and renormalized.
+///
+/// # Arguments
+/// * `state` - The quantum state to measure and collapse
+/// * `target_qubit` - Index of the qubit to measure (0-indexed)
+///
+/// # Returns
+/// The measurement result: 0 or 1
+///
+/// # Examples
+/// ```
+/// use phobos::{QuantumState, gates};
+/// 
+/// // Create superposition on qubit 0
+/// let mut state = QuantumState::new(2);
+/// gates::apply_hadamard(&mut state, 0);
+/// 
+/// // Measure only qubit 0 (qubit 1 remains in |0⟩)
+/// let result = gates::measure_qubit(&mut state, 0);
+/// // result is either 0 or 1, and the state has collapsed accordingly
+/// ```
+pub fn measure_qubit(state: &mut QuantumState, target_qubit: usize) -> u8 {
+    let mut prob_zero = 0.0;
+    
+    // Get the probabiities where the target qubit is 0
+    for i in 0..state.amplitudes.len() {
+        if (i & (1 << target_qubit)) == 0 {
+            prob_zero += state.amplitudes[i].magnitude_squared();
+        }
+    }
+    
+    // Measure one probability
+    let mut rng = rand::rng();
+    let r: f64 = rng.random();
+
+    let outcome = if r < prob_zero { 0 } else { 1 };
+
+    for i in 0..state.amplitudes.len() {
+        let bit_value = if (i & (1 << target_qubit)) == 0 { 0 } else { 1 };
+        if bit_value != outcome {
+            state.amplitudes[i] = Complex::new(0.0, 0.0);
+        }
+    }
+    state.normalize();
+    return outcome;
 }
 
 #[cfg(test)]

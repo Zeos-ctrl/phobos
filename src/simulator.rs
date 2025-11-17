@@ -113,9 +113,15 @@ impl Simulator {
                 Gate::Z { target } => {
                     gates::apply_z(&mut state, *target);
                 },
+                Gate::CZ { control, target } => {
+                    gates::apply_cz(&mut state, *control, *target);
+                },
                 Gate::I { target } => {
                     gates::apply_identity(&mut state, *target);
-                }
+                },
+                Gate::Measure { target } => {
+                    gates::measure_qubit(&mut state, *target);
+                },
             }
         }
         state.measure()
@@ -187,11 +193,25 @@ impl Simulator {
                         state: state.clone()
                     });
                 },
+                Gate::CZ { control, target } => {
+                    gates::apply_cz(&mut state, *control, *target);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied CZ gate (control: {}, target: {})", *control, *target),
+                        state: state.clone()
+                    });
+                },
                 Gate::I { target } => {
                     gates::apply_identity(&mut state, *target);
                     trace.steps.push(TraceStep {
                         description: format!("Applied I gate to qubit {}", *target),
                         state: state.clone()
+                    });
+                },
+                Gate::Measure { target } => {
+                    let result = gates::measure_qubit(&mut state, *target);
+                    trace.steps.push(TraceStep {
+                        description: format!("Measured qubit {}: result = {}", target, result),
+                        state: state.clone(),
                     });
                 },
             }

@@ -27,12 +27,18 @@ pub enum Gate {
     
     /// Identity gate - no operation (placeholder)
     I { target: usize },
+
+    /// Controlled-Z gate - applies phase flip to target if control is |1⟩
+    CZ { control: usize, target: usize },
+
+    /// Measurement - collapses the target qubit to |0⟩ or |1⟩
+    Measure { target: usize },
 }
 
 /// A quantum circuit consisting of a sequence of gates applied to qubits.
 ///
 /// Circuits are built by adding gates in sequence. When executed by a
-/// [`Simulator`], gates are applied in the order they were added.
+/// [`crate::Simulator`], gates are applied in the order they were added.
 pub struct Circuit {
     num_qubits: usize,
     gates: Vec<Gate>,
@@ -176,6 +182,38 @@ impl fmt::Display for Circuit {
                         match i {
                             i if i == *target => {
                                 lines[i].push('I');
+                                lines[i].push('─');
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
+                Gate::CZ { control, target } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *target => {
+                                lines[i].push('Z');
+                                lines[i].push('─');
+                            },
+                            i if i == *control => {
+                                lines[i].push('●');
+                                lines[i].push('─')
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
+                Gate::Measure { target } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *target => {
+                                lines[i].push('M');
                                 lines[i].push('─');
                             },
                             _ => {

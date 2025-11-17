@@ -38,3 +38,40 @@ pub fn plot_histogram(results: &Vec<String>, num_qubits: usize) {
         println!("{}: {}", binary, bar);
     }
 }
+
+/// Plots a histogram for a specific qubit's measurement results.
+///
+/// Displays a horizontal bar chart showing the distribution of a single qubit's outcomes.
+///
+/// # Arguments
+/// * `results` - Vector of measurement results (binary strings)
+/// * `num_qubits` - Total number of qubits in the system
+/// * `target_qubit` - Index of the qubit to display (0-indexed)
+pub fn plot_histogram_qubit(results: &Vec<String>, num_qubits: usize, target_qubit: Option<usize>) {
+    let mut frequency = HashMap::new();
+    
+    for state in results.iter() {
+        let key = if let Some(qubit) = target_qubit {
+            let bit_index = num_qubits - 1 - qubit;
+            state.chars().nth(bit_index).unwrap().to_string()
+        } else {
+            state.clone()
+        };
+        *frequency.entry(key).or_insert(0) += 1;
+    }
+    
+    let total = results.len() as f64;
+    let (num_states, width) = if target_qubit.is_some() {
+        (2, 1)
+    } else {
+        (2_usize.pow(num_qubits as u32), num_qubits)
+    };
+    
+    for i in 0..num_states {
+        let binary = format!("{:0width$b}", i, width = width);
+        let count = frequency.get(&binary).unwrap_or(&0);
+        let percentage = (*count as f64 / total) * 100.0;
+        let bar = "❚".repeat(percentage.floor() as usize);
+        println!("{}: {}", binary, bar);
+    }
+}
