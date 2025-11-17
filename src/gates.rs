@@ -15,8 +15,13 @@ use rand::Rng;
 ///
 /// # Examples
 /// ```
-/// let mut state = QuantumState::new(1);
-/// gates::apply_hadamard(&mut state, 0);
+/// use phobos::{Circuit, Gate, Simulator};
+/// 
+/// let mut circuit = Circuit::new(1);
+/// circuit.add_gate(Gate::Hadamard { target: 0 });
+/// 
+/// let sim = Simulator::new();
+/// let results = sim.run(&circuit, 100);
 /// ```
 pub fn apply_hadamard(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
@@ -62,8 +67,14 @@ pub fn apply_hadamard(state: &mut QuantumState, target_qubit: usize) {
 ///
 /// # Examples
 /// ```
-/// let mut state = QuantumState::new(2);
-/// gates::apply_cnot(&mut state, 0, 1);
+/// use phobos::{Circuit, Gate, Simulator};
+/// 
+/// let mut circuit = Circuit::new(2);
+/// circuit.add_gate(Gate::Hadamard { target: 0 });
+/// circuit.add_gate(Gate::CNOT { control: 0, target: 1 });
+/// 
+/// let sim = Simulator::new();
+/// let _results = sim.run(&circuit, 100);
 /// ```
 pub fn apply_cnot(state: &mut QuantumState, control_qubit: usize, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
@@ -103,8 +114,13 @@ pub fn apply_cnot(state: &mut QuantumState, control_qubit: usize, target_qubit: 
 ///
 /// # Examples
 /// ```
-/// let mut state = QuantumState::new(2);
-/// gates::apply_cz(&mut state, 0, 1);
+/// use phobos::{Circuit, Gate, Simulator};
+/// 
+/// let mut circuit = Circuit::new(2);
+/// circuit.add_gate(Gate::CZ { control: 0, target: 1 });
+/// 
+/// let sim = Simulator::new();
+/// let results = sim.run(&circuit, 100);
 /// ```
 pub fn apply_cz(state: &mut QuantumState, control_qubit: usize, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
@@ -134,8 +150,13 @@ pub fn apply_cz(state: &mut QuantumState, control_qubit: usize, target_qubit: us
 ///
 /// # Examples
 /// ```
-/// let mut state = QuantumState::new(1);
-/// gates::apply_z(&mut state, 0);
+/// use phobos::{Circuit, Gate, Simulator};
+/// 
+/// let mut circuit = Circuit::new(1);
+/// circuit.add_gate(Gate::Z { target: 0 });
+/// 
+/// let sim = Simulator::new();
+/// let results = sim.run(&circuit, 100);
 /// ```
 pub fn apply_z(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
@@ -166,8 +187,13 @@ pub fn apply_z(state: &mut QuantumState, target_qubit: usize) {
 ///
 /// # Examples
 /// ```
-/// let mut state = QuantumState::new(1);
-/// gates::apply_x(&mut state, 0);
+/// use phobos::{Circuit, Gate, Simulator};
+/// 
+/// let mut circuit = Circuit::new(1);
+/// circuit.add_gate(Gate::X { target: 0 });
+/// 
+/// let sim = Simulator::new();
+/// let results = sim.run(&circuit, 100);
 /// ```
 pub fn apply_x(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
@@ -203,8 +229,13 @@ pub fn apply_x(state: &mut QuantumState, target_qubit: usize) {
 ///
 /// # Examples
 /// ```
-/// let mut state = QuantumState::new(1);
-/// gates::apply_y(&mut state, 0);
+/// use phobos::{Circuit, Gate, Simulator};
+/// 
+/// let mut circuit = Circuit::new(1);
+/// circuit.add_gate(Gate::Y { target: 0 });
+/// 
+/// let sim = Simulator::new();
+/// let results = sim.run(&circuit, 100);
 /// ```
 pub fn apply_y(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
@@ -268,13 +299,15 @@ pub fn apply_identity(state: &mut QuantumState, target_qubit: usize) {
 ///
 /// # Examples
 /// ```
-/// // Create superposition on qubit 0
-/// let mut state = QuantumState::new(2);
-/// gates::apply_hadamard(&mut state, 0);
+/// use phobos::{Circuit, Gate, Simulator};
 /// 
-/// // Measure only qubit 0 (qubit 1 remains in |0⟩)
-/// let result = gates::measure_qubit(&mut state, 0);
-/// // result is either 0 or 1, and the state has collapsed accordingly
+/// let mut circuit = Circuit::new(2);
+/// circuit.add_gate(Gate::Hadamard { target: 0 });
+/// circuit.add_gate(Gate::Measure { target: 0 });
+/// // After measurement, qubit 0 is collapsed but qubit 1 remains |0⟩
+/// 
+/// let sim = Simulator::new();
+/// let results = sim.run(&circuit, 100);
 /// ```
 pub fn measure_qubit(state: &mut QuantumState, target_qubit: usize) -> u8 {
     let mut prob_zero = 0.0;

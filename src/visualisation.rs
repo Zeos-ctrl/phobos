@@ -9,6 +9,11 @@ use std::collections::HashMap;
 ///
 /// # Examples
 /// ```
+/// use phobos::Circuit;
+/// use phobos::Simulator;
+/// use phobos::plot_histogram;
+///
+/// let circuit = Circuit::new(1);
 /// let sim = Simulator::new();
 /// let results = sim.run(&circuit, 1000);
 ///

@@ -46,6 +46,10 @@
 //! Phobos includes some visualising functions. We can print the circuit diagram with:
 //!
 //! ``` rust
+//! use phobos::Circuit;
+//!
+//! let circuit = Circuit::new(2);
+//!
 //! println!("{}", circuit);
 //! ```
 //!
@@ -71,8 +75,8 @@
 //!     let sim = Simulator::new();
 //!     let trace = sim.run_with_trace(&circuit);
 //!
-//!      println!("Circuit Trace:");
-//!      println!("{}", trace);
+//!     println!("Circuit Trace:");
+//!     println!("{}", trace);
 //! }
 //! ```
 //!
@@ -95,25 +99,12 @@
 //! We can also visualise the histogram of the output of multiple measurements:
 //!
 //! ``` rust
+//! use phobos::{Circuit, Simulator, plot_histogram};
+//!
 //! // Run the circuit
+//! let circuit = Circuit::new(2);
 //! let sim = Simulator::new();
 //! let results = sim.run(&circuit, 1000);
-//!
-//! // Count outcomes
-//! let mut count_00 = 0;
-//! let mut count_11 = 0;
-//!
-//! for result in &results {
-//!     match result.as_str() {
-//!         "00" => count_00 += 1,
-//!         "11" => count_11 += 1,
-//!         _ => {}
-//!     }
-//! }
-//!
-//! println!("\nResults from 1000 measurements:");
-//! println!("00: {} ({:.1}%)", count_00, count_00 as f64 / 10.0);
-//! println!("11: {} ({:.1}%)", count_11, count_11 as f64 / 10.0);
 //!
 //! println!("\nProbability Distribution:");
 //! plot_histogram(&results, circuit.num_qubits());
