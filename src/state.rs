@@ -42,7 +42,7 @@ impl QuantumState {
     /// ```
     /// use phobos::QuantumState;
     ///
-    /// let state = QuantumState::new(2);
+    /// let mut state = QuantumState::new(2);
     /// state.normalize();
     /// ```
     pub fn normalize(&mut self) {

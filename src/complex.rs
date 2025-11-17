@@ -20,6 +20,7 @@ impl Complex {
     /// # Examples
     /// ```
     /// use phobos::Complex;
+    ///
     /// let a = Complex::new(1.0, 0.0);
     /// ```
     pub fn new(real: f64, imag: f64) -> Self {
@@ -36,6 +37,8 @@ impl Complex {
     ///
     /// # Examples
     /// ```
+    /// use phobos::Complex;
+    ///
     /// let a = Complex::new(1.0, 0.0);
     /// let b = Complex::new(0.0, 1.0);
     /// let c = a.add(&b);
@@ -57,6 +60,8 @@ impl Complex {
     ///
     /// # Examples
     /// ```
+    /// use phobos::Complex;
+    ///
     /// let a = Complex::new(1.0, 0.0);
     /// let b = Complex::new(0.0, 1.0);
     /// let c = a.subtract(&b);
@@ -78,6 +83,8 @@ impl Complex {
     ///
     /// # Examples
     /// ```
+    /// use phobos::Complex;
+    ///
     /// let a = Complex::new(1.0, 0.0);
     /// let b = Complex::new(0.0, 1.0);
     /// let c = a.multiply(&b);
@@ -99,6 +106,8 @@ impl Complex {
     ///
     /// # Examples
     /// ```
+    /// use phobos::Complex;
+    ///
     /// let a = Complex::new(2.0, 2.0);
     /// let b = a.scale(2.0);
     /// ```
@@ -116,6 +125,8 @@ impl Complex {
     ///
     /// # Examples
     /// ```
+    /// use phobos::Complex;
+    ///
     /// let a = Complex::new(1.0, 0.0);
     /// let probability = a.magnitude_squared();
     /// ```
@@ -129,6 +140,8 @@ impl Complex {
     ///
     /// # Examples
     /// ```
+    /// use phobos::Complex;
+    ///
     /// let a = Complex::new(1.0, 0.0);
     /// let b = a.conjugate();
     /// ```

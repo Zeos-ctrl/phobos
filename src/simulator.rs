@@ -61,7 +61,8 @@ impl Simulator {
     /// # Examples
     /// ```
     /// use phobos::Simulator;
-    /// let sim = Simulator::new()
+    ///
+    /// let sim = Simulator::new();
     /// ```
     pub fn new() -> Self {
         Simulator

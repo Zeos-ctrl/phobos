@@ -15,7 +15,6 @@ use rand::Rng;
 ///
 /// # Examples
 /// ```
-/// use phobos::{QuantumState, gates};
 /// let mut state = QuantumState::new(1);
 /// gates::apply_hadamard(&mut state, 0);
 /// ```
@@ -63,7 +62,6 @@ pub fn apply_hadamard(state: &mut QuantumState, target_qubit: usize) {
 ///
 /// # Examples
 /// ```
-/// use phobos::{QuantumState, gates};
 /// let mut state = QuantumState::new(2);
 /// gates::apply_cnot(&mut state, 0, 1);
 /// ```
@@ -105,7 +103,6 @@ pub fn apply_cnot(state: &mut QuantumState, control_qubit: usize, target_qubit: 
 ///
 /// # Examples
 /// ```
-/// use phobos::{QuantumState, gates};
 /// let mut state = QuantumState::new(2);
 /// gates::apply_cz(&mut state, 0, 1);
 /// ```
@@ -137,7 +134,6 @@ pub fn apply_cz(state: &mut QuantumState, control_qubit: usize, target_qubit: us
 ///
 /// # Examples
 /// ```
-/// use phobos::{QuantumState, gates};
 /// let mut state = QuantumState::new(1);
 /// gates::apply_z(&mut state, 0);
 /// ```
@@ -170,7 +166,6 @@ pub fn apply_z(state: &mut QuantumState, target_qubit: usize) {
 ///
 /// # Examples
 /// ```
-/// use phobos::{QuantumState, gates};
 /// let mut state = QuantumState::new(1);
 /// gates::apply_x(&mut state, 0);
 /// ```
@@ -208,7 +203,6 @@ pub fn apply_x(state: &mut QuantumState, target_qubit: usize) {
 ///
 /// # Examples
 /// ```
-/// use phobos::{QuantumState, gates};
 /// let mut state = QuantumState::new(1);
 /// gates::apply_y(&mut state, 0);
 /// ```
@@ -274,8 +268,6 @@ pub fn apply_identity(state: &mut QuantumState, target_qubit: usize) {
 ///
 /// # Examples
 /// ```
-/// use phobos::{QuantumState, gates};
-/// 
 /// // Create superposition on qubit 0
 /// let mut state = QuantumState::new(2);
 /// gates::apply_hadamard(&mut state, 0);
