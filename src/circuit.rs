@@ -1,33 +1,84 @@
 use std::fmt;
 
+/// Quantum gates supported by the simulator.
+///
+/// All gates are represented with their target qubit index (0-indexed).
+/// Multi-qubit gates like CNOT also specify control qubits.
 #[derive(Debug, Clone, Copy)]
 pub enum Gate {
+    /// Hadamard gate - creates superposition
+    /// Transforms |0⟩ → (1/√2)(|0⟩ + |1⟩) and |1⟩ → (1/√2)(|0⟩ - |1⟩)
     Hadamard { target: usize },
+    
+    /// Controlled-NOT gate - flips target if control is |1⟩
     CNOT { control: usize, target: usize },
+    
+    /// Pauli-X gate - bit flip (quantum NOT)
+    /// Transforms |0⟩ → |1⟩ and |1⟩ → |0⟩
     X { target: usize },
+    
+    /// Pauli-Y gate - bit flip with phase
+    /// Transforms |0⟩ → i|1⟩ and |1⟩ → -i|0⟩
     Y { target: usize },
+    
+    /// Pauli-Z gate - phase flip
+    /// Transforms |0⟩ → |0⟩ and |1⟩ → -|1⟩
     Z { target: usize },
+    
+    /// Identity gate - no operation (placeholder)
     I { target: usize },
 }
 
+/// A quantum circuit consisting of a sequence of gates applied to qubits.
+///
+/// Circuits are built by adding gates in sequence. When executed by a
+/// [`Simulator`], gates are applied in the order they were added.
 pub struct Circuit {
     num_qubits: usize,
     gates: Vec<Gate>,
 }
 
 impl Circuit {
+    /// Creates a new quantum circuit with the specified number of qubits.
+    ///
+    /// All qubits are initialized to |0⟩ when the circuit is executed.
+    ///
+    /// # Arguments
+    /// * `num_qubits` - Number of qubits in the circuit
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::Circuit;
+    /// let circuit = Circuit::new(2);
+    /// ```
     pub fn new(num_qubits: usize) -> Self {
         Circuit { num_qubits, gates: Vec::new() }
     }
-
+    
+    /// Adds a gate to the circuit.
+    ///
+    /// Gates are executed in the order they are added.
+    ///
+    /// # Arguments
+    /// * `gate` - The gate to add to the circuit
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::{Circuit, Gate};
+    /// let mut circuit = Circuit::new(2);
+    /// circuit.add_gate(Gate::Hadamard { target: 0 });
+    /// circuit.add_gate(Gate::CNOT { control: 0, target: 1 });
+    /// ```
     pub fn add_gate(&mut self, gate: Gate) {
         self.gates.push(gate)
     }
-
+    
+    /// Returns the number of qubits in the circuit.
     pub fn num_qubits(&self) -> usize {
         self.num_qubits
     }
-
+    
+    /// Returns a slice of all gates in the circuit.
     pub fn gates(&self) -> &[Gate] {
         &self.gates
     }

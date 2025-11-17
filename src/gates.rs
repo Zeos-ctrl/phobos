@@ -1,7 +1,22 @@
 use crate::state::QuantumState;
 use crate::Complex;
 
-// Apply Hadamard gate to a specific qubit
+/// Applies a Hadamard gate to the specified qubit.
+///
+/// The Hadamard gate creates superposition, transforming:
+/// - |0⟩ → (1/√2)(|0⟩ + |1⟩)
+/// - |1⟩ → (1/√2)(|0⟩ - |1⟩)
+///
+/// # Arguments
+/// * `state` - The quantum state to modify
+/// * `target_qubit` - Index of the qubit to apply the gate to (0-indexed)
+///
+/// # Examples
+/// ```
+/// use phobos::{QuantumState, gates};
+/// let mut state = QuantumState::new(1);
+/// gates::apply_hadamard(&mut state, 0);
+/// ```
 pub fn apply_hadamard(state: &mut QuantumState, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
     
@@ -27,7 +42,29 @@ pub fn apply_hadamard(state: &mut QuantumState, target_qubit: usize) {
     } 
 }
 
-// Apply CNOT gate (flips target if control is |1⟩)
+/// Applies a CNOT gate to the specified qubit.
+///
+/// The CNOT gate flips the target qubit if the control bit is |1⟩:
+///
+/// If our control bit is 0 and the target bit is 1 we have this truth
+/// table;
+///
+/// - |00> -> |00>
+/// - |01> -> |01>
+/// - |10> -> |11>
+/// - |11> -> |10>
+///
+/// # Arguments
+/// * `state` - The quantum state to modify
+/// * `control_qubit` - Index of the qubit to apply the gate to (0-indexed)
+/// * `target_qubit` - Index of the qubit to apply the gate to (0-indexed)
+///
+/// # Examples
+/// ```
+/// use phobos::{QuantumState, gates};
+/// let mut state = QuantumState::new(2);
+/// gates::apply_cnot(&mut state, 0, 1);
+/// ```
 pub fn apply_cnot(state: &mut QuantumState, control_qubit: usize, target_qubit: usize) {
     let num_amplitudes = state.amplitudes.len();
 

@@ -1,5 +1,20 @@
 use std::collections::HashMap;
 
+/// Utility function to create a histogram of the results of a quantum circuit
+/// simulation
+///
+/// # Arguments
+/// * `results` - Result vector from the simulator
+/// * `num_qubits` - Number of qubits in the system to get the depth of the histogram
+///
+/// # Examples
+/// ```
+/// let sim = Simulator::new();
+/// let results = sim.run(&circuit, 1000);
+///
+/// println!("\nProbability Distribution:");
+/// plot_histogram(&results, circuit.num_qubits()); 
+/// ```
 pub fn plot_histogram(results: &Vec<String>, num_qubits: usize) {
     let mut frequency = HashMap::new();
 

@@ -5,13 +5,17 @@ use crate::gates;
 
 use std::fmt;
 
+/// Simulator for the quantum circuit
 pub struct Simulator;
 
+/// Struct to hold information of the current step for tracing.
+/// Holds a description of the step as well as the Quantum State.
 pub struct TraceStep {
     pub description: String,
     pub state: QuantumState,
 }
 
+/// Holds multiple TraceSteps to be iterated over when read.
 pub struct ExecutionTrace {
     pub steps: Vec<TraceStep>,
 }
@@ -52,11 +56,33 @@ fn state_to_ket(state: &QuantumState) -> String {
 }
 
 impl Simulator {
+    /// Returns a new Simulator object to run a circuit.
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::Simulator;
+    /// let sim = Simulator::new()
+    /// ```
     pub fn new() -> Self {
         Simulator
     }
 
-    // Run circuit n_shots times, return measurement results
+    /// Run circuit n_shots times, return measurement results.
+    ///
+    /// # Arguments
+    /// * `&Circuit` - Reference to a circuit to run
+    /// * `n_shots` - Number of times to run the circuit
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::Simulator;
+    /// use phobos::Circuit;
+    ///
+    /// let circuit = Circuit::new(1);
+    /// let sim = Simulator::new();
+    ///
+    /// let results = sim.run(&circuit, 100);
+    /// ```
     pub fn run(&self, circuit: &Circuit, n_shots: usize) -> Vec<String> {
         let mut results = Vec::new();
 
@@ -95,6 +121,24 @@ impl Simulator {
         state.measure()
     }
 
+    /// Run circuit with the trace active to see the journey of the quantum state through
+    /// the circuit.
+    ///
+    /// # Arguments
+    /// * `&Circuit` - Reference to a circuit to run
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::Simulator;
+    /// use phobos::Circuit;
+    ///
+    /// let circuit = Circuit::new(1);
+    /// let sim = Simulator::new();
+    ///
+    /// let trace = sim.run_with_trace(&circuit);
+    /// println!("Circuit Trace:");
+    /// println!("{}", trace);
+    /// ```
     pub fn run_with_trace(&self, circuit: &Circuit) -> ExecutionTrace {
         let mut trace = ExecutionTrace { steps: Vec::new() };
         let mut state = QuantumState::new(circuit.num_qubits());

@@ -2,6 +2,7 @@ use crate::complex::Complex;
 
 use rand::Rng;
 
+/// The Quantum State Vector that holds the state of the system for 2^n qubits
 #[derive(Clone)]
 pub struct QuantumState {
     pub amplitudes: Vec<Complex>,
@@ -9,7 +10,17 @@ pub struct QuantumState {
 }
 
 impl QuantumState {
-    // Create state with n qubits, all in |0⟩
+    /// Create state with n qubits, all in |0⟩
+    ///
+    /// # Arguments
+    /// * `num_qubits` - Number of qubits to initalise the state with
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::QuantumState;
+    ///
+    /// let new_state = QuantumState::new(2);
+    /// ```
     pub fn new(num_qubits: usize) -> QuantumState {
         let size = 2_usize.pow(num_qubits as u32);    
         let mut amplitudes = Vec::new();
@@ -25,7 +36,15 @@ impl QuantumState {
         QuantumState { amplitudes, num_qubits }
     }
 
-    // Ensure sum of |amplitude|² = 1
+    /// Ensure sum of all amplitudes in the Quantum State equal 1, |amplitude|² = 1
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::QuantumState;
+    ///
+    /// let state = QuantumState::new(2);
+    /// state.normalize();
+    /// ```
     pub fn normalize(&mut self) {
         let mut sum = 0.0;
         
@@ -47,7 +66,15 @@ impl QuantumState {
         }
     }
 
-    // Measure all qubits, return bitstring (e.g., "01" for 2 qubits)
+    /// Measure all qubits, return bitstring (e.g., "01" for 2 qubits)
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::QuantumState;
+    ///
+    /// let state = QuantumState::new(2);
+    /// let measurement = state.measure();
+    /// ```
     pub fn measure(&self) -> String {
         let mut rng = rand::rng();
         let r: f64 = rng.random();
