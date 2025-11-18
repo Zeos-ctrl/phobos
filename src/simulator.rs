@@ -117,6 +117,12 @@ impl Simulator {
                 Gate::CZ { control, target } => {
                     gates::apply_cz(&mut state, *control, *target);
                 },
+                Gate::Swap { qubit_a, qubit_b } => {
+                    gates::apply_swap(&mut state, *qubit_a, *qubit_b);
+                },
+                Gate::CPhase { control, target, angle } => {
+                    gates::apply_cphase(&mut state, *control, *target, *angle);
+                },
                 Gate::I { target } => {
                     gates::apply_identity(&mut state, *target);
                 },
@@ -198,6 +204,20 @@ impl Simulator {
                     gates::apply_cz(&mut state, *control, *target);
                     trace.steps.push(TraceStep {
                         description: format!("Applied CZ gate (control: {}, target: {})", *control, *target),
+                        state: state.clone()
+                    });
+                },
+                Gate::Swap { qubit_a, qubit_b } => {
+                    gates::apply_swap(&mut state, *qubit_a, *qubit_b);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied Swap gate (A: {}, B: {})", *qubit_a, *qubit_b),
+                        state: state.clone()
+                    });
+                },
+                Gate::CPhase { control, target, angle } => {
+                    gates::apply_cphase(&mut state, *control, *target, *angle);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied Controlled Phase Rotation (control: {}, target: {}, angle: {})", *control, *target, *angle),
                         state: state.clone()
                     });
                 },

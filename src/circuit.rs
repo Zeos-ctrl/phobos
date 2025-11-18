@@ -33,6 +33,13 @@ pub enum Gate {
 
     /// Measurement - collapses the target qubit to |0⟩ or |1⟩
     Measure { target: usize },
+
+    /// Swap - Swaps the target qubits amplitudes
+    Swap { qubit_a: usize, qubit_b: usize },
+
+    /// Controlled phase rotation - applies a phase rotation to the target qubit only when
+    /// both the control and target qubits are in the |1⟩ state.
+    CPhase { control: usize, target: usize, angle: f64 }
 }
 
 /// A quantum circuit consisting of a sequence of gates applied to qubits.
@@ -77,6 +84,48 @@ impl Circuit {
     /// ```
     pub fn add_gate(&mut self, gate: Gate) {
         self.gates.push(gate)
+    }
+
+    /// Applies the Quantum Fourier Transform to a range of qubits.
+    ///
+    /// The QFT decomposes quantum states based on their phase rotation patterns,
+    /// analogous to how a classical FFT decomposes signals into frequency components.
+    ///
+    /// # Arguments
+    /// * `qubit_range` - The range of qubits to apply QFT to (e.g., 0..3 for qubits 0,1,2)
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::Circuit;
+    ///
+    /// let mut circuit = Circuit::new(4);
+    /// circuit.apply_qft(0..4);  // Apply QFT to all 4 qubits
+    /// ```
+    pub fn apply_qft(&mut self, qubit_range: std::ops::Range<usize>) {
+        let qubits: Vec<usize> = qubit_range.collect();
+        let n = qubits.len();
+        
+        // Process each qubit
+        for i in 0..n {
+            let current_qubit = qubits[i];
+            
+            self.add_gate(Gate::Hadamard { target: current_qubit });
+            
+            // Apply controlled rotations from all qubits after current_qubit
+            for j in i + 1..n {
+                let control_qubit = qubits[j];
+                let target_qubit = qubits[i];
+                
+                // compute angle and add CPhase gate
+                let angle = 2.0 * std::f64::consts::PI / (1_u32 << (j - i + 1)) as f64;
+                self.add_gate(Gate::CPhase{ control: control_qubit, target: target_qubit, angle: angle})
+            }
+        }
+        
+        // Swap qubits to reverse order
+        for i in 0..n/2 {
+            self.add_gate(Gate::Swap { qubit_a: qubits[i], qubit_b: qubits[n - 1 -i] });
+        }
     }
     
     /// Returns the number of qubits in the circuit.
@@ -209,6 +258,42 @@ impl fmt::Display for Circuit {
                         }
                     }
                 },
+                Gate::Swap { qubit_a, qubit_b } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *qubit_a => {
+                                lines[i].push('S');
+                                lines[i].push('─');
+                            },
+                            i if i == *qubit_b => {
+                                lines[i].push('S');
+                                lines[i].push('─')
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
+                Gate::CPhase { control, target, .. } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *target => {
+                                lines[i].push('P');
+                                lines[i].push('─');
+                            },
+                            i if i == *control => {
+                                lines[i].push('●');
+                                lines[i].push('─')
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
                 Gate::Measure { target } => {
                     for i in 0..self.num_qubits {
                         match i {
@@ -288,4 +373,15 @@ mod tests {
             _ => panic!("Expected Z gate"),
         }
     }
+
+   #[test]
+    fn test_qft_circuit() {
+        let mut circuit = Circuit::new(4);
+        circuit.apply_qft(0..4);
+        
+        println!("QFT Circuit:");
+        println!("{}", circuit);
+        
+        assert_eq!(circuit.gates().len(), 12);
+    } 
 }

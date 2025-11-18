@@ -24,21 +24,20 @@
 //! ``` rust
 //! use phobos::{Circuit, Gate, Simulator};
 //!
-//! fn main() {
-//!     // Create a 2-qubit circuit
-//!     let mut circuit = Circuit::new(2);
+//! // Create a 2-qubit circuit
+//! let mut circuit = Circuit::new(2);
 //!       
-//!     // Add gates
-//!     circuit.add_gate(Gate::Hadamard { target: 0 });
-//!     circuit.add_gate(Gate::CNOT { control: 0, target: 1 });
+//! // Add gates
+//! circuit.add_gate(Gate::Hadamard { target: 0 });
+//! circuit.add_gate(Gate::CNOT { control: 0, target: 1 });
 //!       
-//!     // Run the circuit 1000 times
-//!     let sim = Simulator::new();
-//!     let results = sim.run(&circuit, 1000);
+//! // Run the circuit 1000 times
+//! let sim = Simulator::new();
+//! let results = sim.run(&circuit, 1000);
 //!       
-//!     // Results will be roughly 50% "00" and 50% "11"
-//!     println!("Measurement results: {:?}", results);
-//! }
+//! // Results will be roughly 50% "00" and 50% "11"
+//! println!("Measurement results: {:?}", results);
+//!
 //! ```
 //!
 //! ## Visualising Circuits
@@ -67,17 +66,15 @@
 //! ``` rust
 //! use phobos::{Circuit, Gate, Simulator};
 //!
-//! fn main() {
-//!     let mut circuit = Circuit::new(2);
-//!     circuit.add_gate(Gate::Hadamard { target: 0 });
-//!     circuit.add_gate(Gate::CNOT { control: 0, target: 1 });
+//! let mut circuit = Circuit::new(2);
+//! circuit.add_gate(Gate::Hadamard { target: 0 });
+//! circuit.add_gate(Gate::CNOT { control: 0, target: 1 });
 //!       
-//!     let sim = Simulator::new();
-//!     let trace = sim.run_with_trace(&circuit);
+//! let sim = Simulator::new();
+//! let trace = sim.run_with_trace(&circuit);
 //!
-//!     println!("Circuit Trace:");
-//!     println!("{}", trace);
-//! }
+//! println!("Circuit Trace:");
+//! println!("{}", trace);
 //! ```
 //!
 //! Output:
