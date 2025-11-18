@@ -8,6 +8,12 @@ use std::fmt;
 /// Simulator for the quantum circuit
 pub struct Simulator;
 
+impl Default for Simulator {
+    fn default() -> Self {
+        Simulator::new()
+    }
+}
+
 /// Struct to hold information of the current step for tracing.
 /// Holds a description of the step as well as the Quantum State.
 pub struct TraceStep {
@@ -88,7 +94,7 @@ impl Simulator {
         let mut results = Vec::new();
 
         for _ in 0..n_shots {
-            results.push(self.run_once(&circuit));
+            results.push(self.run_once(circuit));
         }
 
         results

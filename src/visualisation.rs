@@ -20,7 +20,7 @@ use std::collections::HashMap;
 /// println!("\nProbability Distribution:");
 /// plot_histogram(&results, circuit.num_qubits()); 
 /// ```
-pub fn plot_histogram(results: &Vec<String>, num_qubits: usize) {
+pub fn plot_histogram(results: &[String], num_qubits: usize) {
     let mut frequency = HashMap::new();
 
     // Get the state value as a key and iter over vector
@@ -52,7 +52,7 @@ pub fn plot_histogram(results: &Vec<String>, num_qubits: usize) {
 /// * `results` - Vector of measurement results (binary strings)
 /// * `num_qubits` - Total number of qubits in the system
 /// * `target_qubit` - Index of the qubit to display (0-indexed)
-pub fn plot_histogram_qubit(results: &Vec<String>, num_qubits: usize, target_qubit: Option<usize>) {
+pub fn plot_histogram_qubit(results: &[String], num_qubits: usize, target_qubit: Option<usize>) {
     let mut frequency = HashMap::new();
     
     for state in results.iter() {

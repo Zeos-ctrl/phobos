@@ -413,7 +413,7 @@ pub fn measure_qubit(state: &mut QuantumState, target_qubit: usize) -> u8 {
         }
     }
     state.normalize();
-    return outcome;
+    outcome
 }
 
 #[cfg(test)]
