@@ -117,8 +117,8 @@ impl Circuit {
                 let target_qubit = qubits[i];
                 
                 // compute angle and add CPhase gate
-                let angle = 2.0 * std::f64::consts::PI / (1_u32 << (j - i + 1)) as f64;
-                self.add_gate(Gate::CPhase{ control: control_qubit, target: target_qubit, angle: angle})
+                let computed_angle = 2.0 * std::f64::consts::PI / (1_u32 << (j - i + 1)) as f64;
+                self.add_gate(Gate::CPhase{ control: control_qubit, target: target_qubit, angle: computed_angle})
             }
         }
         

@@ -88,9 +88,7 @@ pub fn apply_cnot(state: &mut QuantumState, control_qubit: usize, target_qubit: 
                 let j = i ^ (1 << target_qubit);  // XOR flips the target bit
                 
                 // Swap amplitudes[i] and amplitudes[j]
-                let temp = state.amplitudes[i];
-                state.amplitudes[i] = state.amplitudes[j];
-                state.amplitudes[j] = temp;
+                state.amplitudes.swap(i, j);
             }
         }
     }
