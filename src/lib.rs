@@ -133,6 +133,6 @@ mod visualisation;
 
 pub use complex::Complex;
 pub use state::QuantumState;
-pub use circuit::{Circuit, Gate};
+pub use circuit::{Circuit, Gate, QPEUnitary};
 pub use simulator::Simulator;
 pub use visualisation::{plot_histogram, plot_histogram_qubit};

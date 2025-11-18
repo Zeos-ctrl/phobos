@@ -1,4 +1,5 @@
 use std::fmt;
+use std::ops::Range;
 
 /// Quantum gates supported by the simulator.
 ///
@@ -40,6 +41,12 @@ pub enum Gate {
     /// Controlled phase rotation - applies a phase rotation to the target qubit only when
     /// both the control and target qubits are in the |1⟩ state.
     CPhase { control: usize, target: usize, angle: f64 }
+}
+
+pub enum QPEUnitary {
+    Z,
+    X,
+    Identity,
 }
 
 /// A quantum circuit consisting of a sequence of gates applied to qubits.
@@ -126,6 +133,92 @@ impl Circuit {
         for i in 0..n/2 {
             self.add_gate(Gate::Swap { qubit_a: qubits[i], qubit_b: qubits[n - 1 -i] });
         }
+    }
+
+    /// Applies the inverse Quantum Fourier Transform to a range of qubits.
+    ///
+    /// The inverse QFT reverses the QFT operation, converting from the Fourier basis
+    /// back to the computational basis.
+    ///
+    /// The inverse QFT applies the same gates as QFT but in reverse order with
+    /// negated phase angles.
+    ///
+    /// # Arguments
+    /// * `qubit_range` - The range of qubits to apply inverse QFT to
+    ///
+    /// # Examples
+    /// ```
+    /// use phobos::Circuit;
+    /// 
+    /// let mut circuit = Circuit::new(4);
+    /// circuit.apply_qft(0..4);
+    /// circuit.apply_inverse_qft(0..4);  // Returns to original state
+    /// ```
+    pub fn apply_inverse_qft(&mut self, qubit_range: std::ops::Range<usize>) {
+        let qubits: Vec<usize> = qubit_range.collect();
+        let n = qubits.len();
+        
+        // Swap qubits (same as QFT, but done first in inverse)
+        for i in 0..n/2 {
+            self.add_gate(Gate::Swap { qubit_a: qubits[i], qubit_b: qubits[n - i - 1] });
+        }
+        
+        // Apply rotations and Hadamards in REVERSE order with NEGATED angles
+        for i in (0..n).rev() {
+            let current_qubit = qubits[i];
+            
+            // Apply controlled rotations in reverse order with negated angles
+            for j in ((i + 1)..n).rev() {
+                let control_qubit = qubits[j];
+                let target_qubit = qubits[i];
+                
+                let angle = -2.0 * std::f64::consts::PI / (1_u32 << (j - i + 1)) as f64;
+                self.add_gate(Gate::CPhase { control: control_qubit, target: target_qubit, angle });
+            }
+            
+            // Apply Hadamard
+            self.add_gate(Gate::Hadamard { target: current_qubit });
+        }
+    }
+
+    pub fn apply_qpe(&mut self, 
+                     readout_qubits: Range<usize>, 
+                     target_qubit: usize,
+                     unitary: QPEUnitary) {
+        let qubits: Vec<usize> = readout_qubits.clone().collect();
+        let n = qubits.len();
+
+        // Create superposition in readout qubits
+        for i in 0..n {
+            let current_qubit = qubits[i];
+
+            self.add_gate(Gate::Hadamard { target:  current_qubit });
+        }
+        
+        // Apply controlled-U^(2^k) operations
+        for i in 0..n {
+            let control_qubit = qubits[i];
+            let power = 2_u32.pow((n - 1 - i) as u32);
+            
+            match unitary {
+                QPEUnitary::Z => {
+                    // Apply controlled-Z^power
+                    let angle = power as f64 * std::f64::consts::PI;
+                    self.add_gate(Gate::CPhase { control: control_qubit, target: target_qubit, angle });
+                },
+                QPEUnitary::X => {
+                    if power % 2 != 0 {
+                        self.add_gate(Gate::CNOT { control: control_qubit, target: target_qubit });
+                    }
+                },
+                QPEUnitary::Identity => {
+                    self.add_gate(Gate::I { target: target_qubit });
+                },
+            }
+        }
+        
+        // Apply inverse QFT to readout qubits
+        self.apply_inverse_qft(readout_qubits);
     }
     
     /// Returns the number of qubits in the circuit.
@@ -384,4 +477,13 @@ mod tests {
         
         assert_eq!(circuit.gates().len(), 12);
     } 
+
+    #[test]
+    fn test_qpe_circuit() {
+        let mut circuit = Circuit::new(3);
+        circuit.add_gate(Gate::X { target: 2 });
+        circuit.apply_qpe(0..2, 2, QPEUnitary::Z);
+
+        assert_eq!(circuit.gates().len(), 9);
+    }
 }
