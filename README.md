@@ -1,6 +1,8 @@
 # Phobos - Quantum Circuit Simulator
 A from-scratch quantum circuit simulator built in Rust for learning and experimentation with quantum computing.
 
+This is a hobby project so use with care!
+
 ## Installation
 
 Add this to your Cargo.toml:
@@ -12,7 +14,7 @@ phobos = "0.1.0"
 Or clone and build from source:
 
 ``` bash
-git clone https://github.com/yourusername/phobos.git
+git clone https://github.com/Zeos-ctrl/phobos.git
 cd phobos
 cargo build --release
 ```
