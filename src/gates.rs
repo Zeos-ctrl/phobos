@@ -1,5 +1,6 @@
 use crate::state::QuantumState;
 use crate::Complex;
+use crate::Matrix2;
 
 use rand::Rng;
 
@@ -363,6 +364,78 @@ pub fn apply_cphase(state: &mut QuantumState, control_qubit: usize, target_qubit
     }
 }
 
+/// Applies a controlled SWAP gate to two qubits.
+///
+/// The controlled SWAP (also called Fredkin gate) exchanges the states of two qubits
+/// only when the control qubit is in the |1⟩ state. When the control is |0⟩, nothing happens.
+///
+/// This gate is essential for quantum algorithms like Shor's period finding, where it
+/// implements modular arithmetic operations through specific swap patterns.
+///
+/// # Transformations
+/// When control = |0⟩:
+/// - |0ab⟩ → |0ab⟩ (no change)
+///
+/// When control = |1⟩:
+/// - |100⟩ → |100⟩ (both target qubits same, no change)
+/// - |101⟩ → |110⟩ (swaps qubit_a and qubit_b)
+/// - |110⟩ → |101⟩ (swaps qubit_a and qubit_b)
+/// - |111⟩ → |111⟩ (both target qubits same, no change)
+///
+/// # Arguments
+/// * `state` - The quantum state to modify
+/// * `control` - Index of the control qubit
+/// * `qubit_a` - Index of the first qubit to swap
+/// * `qubit_b` - Index of the second qubit to swap
+///
+/// # Examples
+/// ```
+/// use phobos::{Circuit, Gate, Simulator};
+/// 
+/// let mut circuit = Circuit::new(3);
+/// circuit.add_gate(Gate::X { target: 0 });  // Set control to |1⟩
+/// circuit.add_gate(Gate::CSwap { control: 0, qubit_a: 1, qubit_b: 2 });
+/// ```
+pub fn apply_cswap(state: &mut QuantumState, control: usize, qubit_a: usize, qubit_b: usize) {
+    let num_amplitudes = state.amplitudes.len();
+    
+    for i in 0..num_amplitudes {
+        // Check that the control bit is |1⟩
+        if ((i >> control) & 1) != 0 {
+            // Check if the two bits are different (only then do we swap)
+            if ((i >> qubit_a) & 1) != ((i >> qubit_b) & 1) {
+                // Find partner index by flipping both bits
+                let j = i ^ (1 << qubit_a) ^ (1 << qubit_b);
+                // Avoid double swap by only swapping when i < j
+                if i < j {
+                    state.amplitudes.swap(i, j);
+                }
+            }
+        }
+    }
+}
+
+pub fn apply_u(
+    state: &mut QuantumState, 
+    target_qubit: usize, 
+    matrix: &Matrix2
+) {
+    let num_amplitudes = state.amplitudes.len();
+    
+    for i in 0..num_amplitudes {
+        if (i & (1 << target_qubit)) == 0 {
+            let j = i + (1 << target_qubit);
+            let old_i = state.amplitudes[i].clone();
+            let old_j = state.amplitudes[j].clone();
+            
+            state.amplitudes[i] = old_i.multiply(&matrix[(0, 0)])
+                                      .add(&old_j.multiply(&matrix[(0, 1)]));
+            state.amplitudes[j] = old_i.multiply(&matrix[(1, 0)])
+                                      .add(&old_j.multiply(&matrix[(1, 1)]));
+        }
+    }
+}
+
 /// Measures a specific qubit and collapses the quantum state.
 ///
 /// Unlike [`QuantumState::measure`] which measures all qubits, this function
@@ -609,5 +682,23 @@ mod tests {
         // Should become i|11⟩, so real=0, imaginary=1
         assert!(state.amplitudes[3].real.abs() < 1e-10);
         assert!((state.amplitudes[3].imag - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_cswap_with_control_on() {
+        let mut state = QuantumState::new(3);
+        state.amplitudes[0] = Complex::new(0.0, 0.0);
+        state.amplitudes[5] = Complex::new(1.0, 0.0);
+        
+        apply_cswap(&mut state, 0, 1, 2);
+        
+        // Debug: print all non-zero amplitudes
+        for i in 0..8 {
+            if state.amplitudes[i].magnitude_squared() > 0.01 {
+                println!("Index {}: |{:03b}⟩ = {}", i, i, state.amplitudes[i].magnitude_squared());
+            }
+        }
+        
+        assert!(state.amplitudes[3].magnitude_squared() > 0.99);
     }
 }

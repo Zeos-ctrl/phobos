@@ -1,3 +1,5 @@
+use crate::Matrix2;
+
 use std::fmt;
 use std::ops::Range;
 
@@ -40,7 +42,16 @@ pub enum Gate {
 
     /// Controlled phase rotation - applies a phase rotation to the target qubit only when
     /// both the control and target qubits are in the |1⟩ state.
-    CPhase { control: usize, target: usize, angle: f64 }
+    CPhase { control: usize, target: usize, angle: f64 },
+
+    /// Controlled Swap gate - If control bit is 0 do nothing if 1 swap a and b
+    CSwap { control: usize, qubit_a: usize, qubit_b: usize },
+
+    /// General single-qubit unitary gate U
+    U { 
+        target: usize, 
+        matrix: Matrix2
+    },
 }
 
 pub enum QPEUnitary {
@@ -379,6 +390,44 @@ impl fmt::Display for Circuit {
                             i if i == *control => {
                                 lines[i].push('●');
                                 lines[i].push('─')
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
+                Gate::CSwap { control, qubit_a, qubit_b } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *qubit_a => {
+                                lines[i].push('x');
+                                lines[i].push('─');
+                            },
+                            i if i == *qubit_b => {
+                                lines[i].push('x');
+                                lines[i].push('─');
+                            },
+                            i if i == *control => {
+                                lines[i].push('●');
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            },
+                            _ => {
+                                lines[i].push('─');
+                                lines[i].push('─');
+                                lines[i].push('─');
+                            }
+                        }
+                    }
+                },
+                Gate::U { target, .. } => {
+                    for i in 0..self.num_qubits {
+                        match i {
+                            i if i == *target => {
+                                lines[i].push('U');
+                                lines[i].push('─');
                             },
                             _ => {
                                 lines[i].push('─');

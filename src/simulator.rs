@@ -129,8 +129,14 @@ impl Simulator {
                 Gate::CPhase { control, target, angle } => {
                     gates::apply_cphase(&mut state, *control, *target, *angle);
                 },
+                Gate::CSwap { control, qubit_a, qubit_b } => {
+                    gates::apply_cswap(&mut state, *control, *qubit_a, *qubit_b);
+                },
                 Gate::I { target } => {
                     gates::apply_identity(&mut state, *target);
+                },
+                Gate::U { target, matrix } => {
+                    gates::apply_u(&mut state, *target, matrix);
                 },
                 Gate::Measure { target } => {
                     gates::measure_qubit(&mut state, *target);
@@ -227,10 +233,24 @@ impl Simulator {
                         state: state.clone()
                     });
                 },
+                Gate::CSwap { control, qubit_a, qubit_b } => {
+                    gates::apply_cswap(&mut state, *control, *qubit_a, *qubit_b);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied Controlled Swap (control: {}, A: {}, B: {})", *control, *qubit_a, *qubit_b),
+                        state: state.clone()
+                    });
+                },
                 Gate::I { target } => {
                     gates::apply_identity(&mut state, *target);
                     trace.steps.push(TraceStep {
                         description: format!("Applied I gate to qubit {}", *target),
+                        state: state.clone()
+                    });
+                },
+                Gate::U { target, matrix } => {
+                    gates::apply_u(&mut state, *target, matrix);
+                    trace.steps.push(TraceStep {
+                        description: format!("Applied U gate to qubit {}, with matrix {:?}", *target, matrix),
                         state: state.clone()
                     });
                 },

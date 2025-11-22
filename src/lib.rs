@@ -130,9 +130,13 @@ mod gates;
 mod circuit;
 mod simulator;
 mod visualisation;
+mod hamiltonian;
+mod matrix;
 
 pub use complex::Complex;
 pub use state::QuantumState;
 pub use circuit::{Circuit, Gate, QPEUnitary};
 pub use simulator::Simulator;
 pub use visualisation::{plot_histogram, plot_histogram_qubit};
+pub use hamiltonian::HamiltonianSimulation;
+pub use matrix::{Matrix2, Vector2};

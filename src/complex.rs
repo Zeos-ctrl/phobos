@@ -1,6 +1,6 @@
 /// Complex number representation, these are the representation
 /// of Qubits within the circuit.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Complex {
     /// Real part to the number
     pub real: f64,
@@ -149,6 +149,16 @@ impl Complex {
         Complex {
             real: self.real,
             imag: -self.imag
+        }
+    }
+
+    /// Compute the complex exponential e^(a+bi)
+    /// Using Euler's formula: e^(a+bi) = e^a * (cos(b) + i*sin(b))
+    pub fn exp(&self) -> Complex {
+        let exp_real = self.real.exp();  // e^a
+        Complex {
+            real: exp_real * self.imag.cos(),   // e^a * cos(b)
+            imag: exp_real * self.imag.sin()    // e^a * sin(b)
         }
     }
 }
